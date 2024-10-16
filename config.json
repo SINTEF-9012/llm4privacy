@@ -1,0 +1,8 @@
+{
+    "dataset_name": "OPP-115", 
+    "engine": "gpt-35-turbo-0301",
+    "prompt_id": "IIIa",
+    "n_policies": null,
+    "remove_HTML": true,
+    "llm_location": "local" 
+}
