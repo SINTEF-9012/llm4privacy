@@ -11,32 +11,34 @@ import csv
 from copy import deepcopy
 
 
-def call_api(llm_location, messages, engine, max_tokens):
+def call_api(llm_location, messages, engine, host, max_tokens):
     assert llm_location in ["azure", "local"]
     if llm_location == "azure":
         return openai.chat.completions.create(
             model=engine, messages=messages, max_tokens=500
         )
     else:
+        if host == "ollama":
+            #add options later.
+            return client.chat(model=engine, messages=messages)
         return client.chat.completions.create(
             model=engine, messages=messages, max_tokens=500
         )
 
 
 def call_with_context(
-        llm_location, context: list, sentence: str, engine: str, max_tokens: int, role="user"
+        llm_location, context: list, sentence: str, engine: str, host: str, max_tokens: int, role="user"
 ) -> str:
     current_context = deepcopy(context)
     current_context.append({"role": role, "content": sentence})
-    response = call_api(llm_location, current_context, engine, max_tokens)
+    response = call_api(llm_location, current_context, engine, host, max_tokens)
     message = response.choices[0].message
-    print(message)
     return message.content
 
 
-def get_llm_response(llm_location, sentence, context, engine, max_tokens):
+def get_llm_response(llm_location, sentence, context, engine, host, max_tokens):
     try:
-        answer = call_with_context(llm_location, context, sentence, engine, max_tokens)
+        answer = call_with_context(llm_location, context, sentence, engine, host, max_tokens)
         print(answer)
         return answer
     except Exception as e:
@@ -60,8 +62,12 @@ if __name__ == "__main__":
         openai.api_version = "2024-02-15-preview"
         openai.api_key = openai_config["key"]
         print(openai.version.VERSION)
-    else:   
-        client = openai.OpenAI(base_url=config["base_url"], api_key=config["api_key"])
+    else:
+        if config["host"] == "ollama":
+            client = ollama.Client(host=config["base_url"])
+            
+        else:
+            client = openai.OpenAI(base_url="http://localhost:1234/v1", api_key="lm-studio")
 
     # select prompt
     context = get_context(config["prompt_id"])
@@ -103,6 +109,7 @@ if __name__ == "__main__":
             row["segment_text"],
             context,
             config["engine"],
+            config["host"],
             config["max_tokens"]
         )
         df_segments.loc[index, "llm_response"] = answer

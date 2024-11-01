@@ -1,8 +1,13 @@
 {
     "dataset_name": "OPP-115", 
-    "engine": "gpt-35-turbo-0301",
-    "prompt_id": "IIIa",
+    "engine": "llama3:70b-instruct-custom",
+    "prompt_id": "XIa",
     "n_policies": null,
     "remove_HTML": true,
-    "llm_location": "local" 
+    "llm_location": "local",
+    "host": "ollama",
+    "base_url": "http://localhost:11434/v1",
+    "api_endpoint": "/api/chat",
+    "max_tokens": 500,
+    "api_key": "ollama"
 }

@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 result_path_base = "results/OPP-115/"
-OVERWRITE = False           
+OVERWRITE = False   
+np.set_printoptions(threshold=np.inf)
 
 RELEVANT_COLUMNS = [  # "Other",
     "User Choice/Control",
@@ -50,13 +51,17 @@ def get_confidence_intervals(df_segments_with_gt, df_results, report):
             sampled_policies = np.random.choice(
                 df_segments_with_gt["policy_ID"].unique(), 41, replace=False
             )
+            #print(sampled_policies)
             df_sampled_index = df_segments_with_gt.index[
                 df_segments_with_gt["policy_ID"].isin(sampled_policies)
             ]
+            #print(df_sampled_index)
             y_true_sampled = df_segments_with_gt.loc[df_sampled_index][
                 RELEVANT_COLUMNS
             ].values
             y_pred_sampled = df_results.loc[df_sampled_index][RELEVANT_COLUMNS].values
+            #print(y_pred_sampled)
+            #print(len(y_pred_sampled), len(y_pred_sampled[0]))
             # obtain performance metrics for each class for each subsample
             report_per_class = metrics.precision_recall_fscore_support(
                 y_true_sampled, y_pred_sampled, average=None, zero_division=0.0
@@ -137,9 +142,11 @@ if __name__ == "__main__":
         # obtain dummy arrays, removing other category
         y_true = df_segments_with_gt[RELEVANT_COLUMNS].values
         y_pred = df_results[RELEVANT_COLUMNS].values
+        #print(y_pred)
         ind_only_other = np.sum(y_true, axis=1) == 0
         y_true = y_true[~ind_only_other]
         y_pred = y_pred[~ind_only_other]
+        #print(y_pred)
         df_results = df_results[~ind_only_other]
         df_segments_with_gt = df_segments_with_gt[~ind_only_other]
 

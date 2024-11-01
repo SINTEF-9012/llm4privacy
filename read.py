@@ -57,6 +57,7 @@ def get_df_annotations(dataset_name):
     ):
         for file_path in glob(os.path.join(path, "*.csv")):
             annotation = pd.read_csv(file_path, header=None, names=header_names)
+            #print(file_path)
             annotation["policy_ID"] = os.path.basename(file_path).split("_")[0]
             df_annotations.append(annotation)
     df_annotations = pd.concat(df_annotations, axis=0, ignore_index=True)
@@ -71,7 +72,7 @@ def get_df_annotations(dataset_name):
     assert len(df_annotations["policy_ID"].unique()) == 115
     assert all(df_annotations.groupby("policy_ID")["annotator_ID"].nunique() == 3)
     assert len(df_annotations) == 23194
-
+    #print(df_annotations)
     return df_annotations
 
 
@@ -110,11 +111,13 @@ def get_df_segments_with_gt(dataset_name, df_annotations, remove_html_tags=False
     # obtain df_segments with groundtruth
     print("Get dataframe with segments text and ground truth...")
     df_segments = get_df_segments(dataset_name, remove_html_tags=remove_html_tags)
+    print(df_segments)
     tqdm.pandas()
     df_segments["gt"] = df_segments["complete_segment_ID"].progress_apply(
         get_ground_truth, args=(df_annotations,)
     )
     df_segments = df_segments.join(df_segments["gt"].str.join("|").str.get_dummies())
+    #print(df_segments)
     return df_segments
 
 
@@ -153,10 +156,13 @@ def get_df_results(file_path, return_dummies = True):
     # obtain df_segments with pred
     print("Get dataframe with results...")
     df_results = pd.read_excel(file_path)
+    #print(df_results)
     tqdm.pandas()
     df_results["pred"] = df_results["llm_response"].progress_apply(detect_categories)
+    #print(df_results)
     if return_dummies:
         df_results = df_results.join(df_results["pred"].str.join("|").str.get_dummies())
+    #print(df_results)
     return df_results
 
 
@@ -202,6 +208,10 @@ def detect_categories(llm_response_value):
             if cat_to_check.lower() in llm_response_value.lower():
                 pred.append(category)
                 break
+    #if len(pred) > 1:
+        #print(pred)
+        #print(llm_response_value)
+        #print('--------------------------------------------------------------------------------')
     return pred
 
 
@@ -213,6 +223,8 @@ def get_ground_truth(complete_segment_ID_value, df_annotations, min_occurence=2,
     annotations = annotations[column_name].value_counts()[
         annotations[column_name].value_counts() >= min_occurence
     ]
+    #print(annotations.to_list())
+    #print('------------------')
     return annotations.index.to_list()
 
 
